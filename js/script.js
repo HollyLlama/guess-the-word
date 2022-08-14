@@ -20,7 +20,7 @@ const playButton = document.querySelector(".play-again");
 //starting word to test out the game until you fetch words from a hosted file
 let word = "magnolia";
 //array will contain all the letters the player guesses
-const guessedLetters = [];
+let guessedLetters = [];
 
 //number of guesses
 let remainingGuesses = 8; //this is the maximum number of guesses a player can make
@@ -132,6 +132,7 @@ const guessCount = function (letter) {
 
   if (remainingGuesses === 0){ //if the remaing guesses equals 0 then output a game over message
     message.innerHTML = `Game over! The word was <span class="highlight">${word}</span>.`;
+    startOver();
   } else if(remainingGuesses === 1) { //if there's only 1 guess left output this message
     remainingGuessSpan.innerText = `${remainingGuesses} guess`;
   } else { // otherwise output this message
@@ -145,8 +146,33 @@ const winner = function () {
   if(word.toUpperCase() === wordProgress.innerText){ // the word against the word-in-progress for a stict match
     message.classList.add("win");
     message.innerHTML = `<p class="highlight">You guessed the correct word! Congrats!</p>`; //update the content of the message
+    startOver();
   }
 };
 
+// function to hide element when game is over, win or lose
+const startOver =  function () {
+  guessButton.classList.add("hide");
+  remainingGuess.classList.add("hide");
+  guessedLettersList.classList.add("hide");
+  playButton.classList.remove("hide");
+}
 
+//click event reset and active game
+playButton.addEventListener("click", function (e) {
+  message.classList.remove("win");
+  message.innerText = "";
+  guessedLettersList.innerHTML = "";
+  remainingGuesses = 8;
+  guessedLetters = [];
+  remainingGuessSpan.innerText = `${remainingGuesses} guesses`;
+  guessButton.classList.remove("hide");
+  getWord();
+
+    // show the right UI elements
+    guessButton.classList.remove("hide");
+    playButton.classList.add("hide");
+    remainingGuess.classList.remove("hide");
+    guessedLettersList.classList.remove("hide");
+});
 
