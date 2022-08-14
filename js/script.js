@@ -69,6 +69,38 @@ const makeGuess = function (letter) {
     message.innerText = "You already guessed that one.";
   } else {
     guessedLetters.push(letterUp); // if this is a new letter, put it into my empty array
+    // console.log(guessedLetters);
+    displayGuessedLetter();
+    wordProgressUpdate(guessedLetters);
   }
-  console.log(guessedLetters);
 };
+
+//function to update the letters that the player guesses
+const displayGuessedLetter = function () {
+  guessedLettersList.innerHTML = ""; // empty the ul for the guessed-letters
+  for (const letter of guessedLetters) { // for of loop!! iterate through the new array with all my new items in it and...
+    const li = document.createElement("li"); // create a new li element for each item
+    li.innerText = letter; // put the item inside li
+    guessedLettersList.append(li); //put all my new li elements into the ul element
+  }
+};
+
+//function that updates word in progress 
+const wordProgressUpdate = function (guessedLetters) {
+  console.log(`I just guessed ${guessedLetters}`);
+  const wordUpper = word.toUpperCase(); //change letters in word to uppercase
+  const wordArray = wordUpper.split(""); //split letters of word into an array
+  console.log(wordArray);
+  //array will contain the guessed letters that match the hidden word
+  const matchedLetters = [];
+  for (const letter of wordArray){
+    if(guessedLetters.includes(letter) ){
+      matchedLetters.push(letter.toUpperCase());
+    }else {
+      matchedLetters.push("●");
+    }
+    wordProgress.innerText = matchedLetters.join("");
+  }
+}
+
+
