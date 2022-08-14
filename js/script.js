@@ -11,16 +11,31 @@ const wordProgress = document.querySelector(".word-in-progress");
 //paragraph where the remaining guesses will display.
 const remainingGuess = document.querySelector(".remaining");
 //span inside the paragraph where the remaining guesses will display.
-const remainingGuessSpan = document.querySelector(".remaining.span");
+const remainingGuessSpan = document.querySelector(".remaining span");
 //empty paragraph where messages will appear when the player guesses a letter.
 const message = document.querySelector(".message");
 //hidden button that will appear prompting the player to play again.
 const playButton = document.querySelector(".play-again");
 
 //starting word to test out the game until you fetch words from a hosted file
-const word = "magnolia";
+let word = "magnolia";
 //array will contain all the letters the player guesses
 const guessedLetters = [];
+
+//number of guesses
+let remainingGuesses = 8; //this is the maximum number of guesses a player can make
+
+//function to get random words from text document
+const getWord = async function () { //this is an async function so grab it while the page loads
+  const response = await fetch("https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt"); //grab the doc and put it here
+  const words = await response.text(); //put it in text
+  const wordArray = words.split("\n"); //split it by words ("/" seperates words and "n" is the newlines (line breaks)) and put each word into an array
+  const randomIndex = Math.floor(Math.random() * wordArray.length);//grab a random word from the array
+  word = wordArray[randomIndex].trim(); //update the mystery word with the new random word and remove any extra whitespace with ".trim()"
+  placeholder(word); //put the new word in the placeholder function
+};
+
+
 
 // To display dots for each letter of placeholder word
 const placeholder = function (word) { //regular ol' function with a parameter
@@ -32,8 +47,8 @@ const placeholder = function (word) { //regular ol' function with a parameter
   wordProgress.innerText = placeholderLetters.join("");//now change the inner text of my word-in-progess <p> tag to the new array, but join that array so there's no commas between the letters
 };
 
-placeholder(word);//calling my function with an argument (global variable above)
-
+//Let the game begin
+getWord();
 
 //click event listener for guess button
 guessButton.addEventListener("click", function (e){
@@ -64,14 +79,15 @@ const checkPlayerInput = function(input){
 
 //function to capture input
 const makeGuess = function (letter) {
-  const letterUp = letter.toUpperCase(); //JavaScript is case sensitive, so let's fix it
-  if (guessedLetters.includes(letterUp)) { //if the user guesses the same letter in the array then output this message
+  letter = letter.toUpperCase(); //JavaScript is case sensitive, so let's fix it
+  if (guessedLetters.includes(letter)) { //if the user guesses the same letter in the array then output this message
     message.innerText = "You already guessed that one.";
   } else {
-    guessedLetters.push(letterUp); // if this is a new letter, put it into my empty array
+    guessedLetters.push(letter); // if this is a new letter, put it into my empty array
     // console.log(guessedLetters);
     displayGuessedLetter();
     wordProgressUpdate(guessedLetters);
+    guessCount(letter);
   }
 };
 
@@ -85,22 +101,52 @@ const displayGuessedLetter = function () {
   }
 };
 
-//function that updates word in progress 
+//function that updates word-in-progress 
 const wordProgressUpdate = function (guessedLetters) {
   console.log(`I just guessed ${guessedLetters}`);
   const wordUpper = word.toUpperCase(); //change letters in word to uppercase
   const wordArray = wordUpper.split(""); //split letters of word into an array
   console.log(wordArray);
   //array will contain the guessed letters that match the hidden word
-  const matchedLetters = [];
-  for (const letter of wordArray){
+  const matchedLetters = []; // empty array for my matched letters to go in
+  for (const letter of wordArray){ // for every letter guessed, check if it matches a letter inthe mystery word
     if(guessedLetters.includes(letter) ){
-      matchedLetters.push(letter.toUpperCase());
+      matchedLetters.push(letter.toUpperCase()); // put all matches to uppercase and add to new array
     }else {
-      matchedLetters.push("●");
+      matchedLetters.push("●"); //if not match then put a dot in as a placeholder
     }
-    wordProgress.innerText = matchedLetters.join("");
+    wordProgress.innerText = matchedLetters.join(""); // update my word in progress with the letters from my new array
+    winner(); //check if player won
   }
-}
+};
+
+//function to count guesses remaining
+const guessCount = function (letter) {
+  const upperWord = word.toUpperCase(); // change the mystery word to uppercase
+  if (!upperWord.includes(letter)){ //if the mystery word doesn't include the guessed letter, then output a new message and subtract 1 from the remaining guesses
+    message.innerText = `Sorry, the word has no ${letter}.`;
+    remainingGuesses -= 1;
+  } else if(upperWord.includes(letter) && word.toUpperCase() != wordProgress.innerText) {
+    message.innerText = `Good guess! The word has the letter ${letter}.`; // if there's a match but the entire word doesn't match the mystery word then output a new message
+  }
+
+  if (remainingGuesses === 0){ //if the remaing guesses equals 0 then output a game over message
+    message.innerHTML = `Game over! The word was <span class="highlight">${word}</span>.`;
+  } else if(remainingGuesses === 1) { //if there's only 1 guess left output this message
+    remainingGuessSpan.innerText = `${remainingGuesses} guess`;
+  } else { // otherwise output this message
+    remainingGuessSpan.innerText = `${remainingGuesses} guesses`;
+  }
+
+};
+
+//function to check if player won
+const winner = function () {
+  if(word.toUpperCase() === wordProgress.innerText){ // the word against the word-in-progress for a stict match
+    message.classList.add("win");
+    message.innerHTML = `<p class="highlight">You guessed the correct word! Congrats!</p>`; //update the content of the message
+  }
+};
+
 
 
